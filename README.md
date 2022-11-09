@@ -1,116 +1,119 @@
-# Implementation-of-Logistic-Regression-Using-Gradient-Descent
-
-## AIM:
+# Implementation of Logistic Regression Using Gradient Descent
+# AIM:
 To write a program to implement the the Logistic Regression Using Gradient Descent.
-
-## Equipments Required:
+# EQUIPMENTS REQUIRED:
 1. Hardware – PCs
 2. Anaconda – Python 3.7 Installation / Jupyter notebook
-
-## Algorithm
-1. 
-2. 
-3. 
-4. 
-
-## Program:
+# ALGORITHM:
+1. Import the packages required.
+2. Read the dataset.
+3. Define X and Y array.
+4. Define a function for costFunction,cost and gradient.
+5. Define a function to plot the decision boundary and predict the Regression value.
+# PROGRAM:
 ```
 /*
 Program to implement the the Logistic Regression Using Gradient Descent.
-Developed by: 
-RegisterNumber:  
+Developed by: Shyam Kumar A
+RegisterNumber: 212221230098
 */
 ```
+
 ```
 import numpy as np
-
 import matplotlib.pyplot as plt
+from scipy import optimize
 
-import pandas as pd
+data=np.loadtxt("ex2data1.txt",delimiter=',')
+X=data[:,[0,1]]
+y=data[:,2]
 
-datasets=pd.read_csv('Social_Network_Ads (1).csv')
+X[:5]
 
-x=datasets.iloc[:,[2,3]].values
+y[:5]
 
-y=datasets.iloc[:,4].values
+plt.figure()
+plt.scatter(X[y==1][:,0],X[y==1][:,1],label="Admitted")
+plt.scatter(X[y==0][:,0],X[y==0][:,1],label="Not Admitted")
+plt.xlabel("Exam 1 score")
+plt.ylabel("Exam 2 score")
+plt.legend()
+plt.show()
 
-from sklearn.model_selection import train_test_split
+def sigmoid(z):
+    return 1/(1+np.exp(-z))
 
-x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.25,random_state=0)
+plt.plot()
+X_plot=np.linspace(-10,10,100)
+plt.plot(X_plot,sigmoid(X_plot))
+plt.show()
 
-from sklearn.preprocessing import StandardScaler
+def costFunction (theta,X,y):
+    h=sigmoid(np.dot(X,theta))
+    J=-(np.dot(y,np.log(h))+np.dot(1-y,np.log(1-h)))/X.shape[0]
+    grad=np.dot(X.T,h-y)/X.shape[0]
+    return J,grad
 
-sc_x=StandardScaler()
+X_train=np.hstack((np.ones((X.shape[0],1)),X))
+theta=np.array([0,0,0])
+J,grad=costFunction(theta,X_train,y)
+print(J)
+print(grad)
 
-sc_x
+def cost (theta,X,y):
+    h=sigmoid(np.dot(X,theta))
+    J=-(np.dot(y,np.log(h))+np.dot(1-y,np.log(1-h)))/X.shape[0]
+    return J
 
-StandardScaler()
+def gradient (theta,X,y):
+    h=sigmoid(np.dot(X,theta))
+    grad=np.dot(X.T,h-y)/X.shape[0]
+    return grad
 
-x_train=sc_x.fit_transform(x_train)
+X_train=np.hstack((np.ones((X.shape[0],1)),X))
+theta=np.array([0,0,0])
+res=optimize.minimize(fun=cost,x0=theta,args=(X_train,y),method='Newton-CG',jac=gradient)
+print(res.fun)
+print(res.x)
 
-x_Test=sc_x.transform(x_test)
+def plotDecisionBoundary(theta,X,y):
+    x_min,x_max=X[:,0].min()-1,X[:,0].max()+1
+    y_min,y_max=X[:,1].min()-1,X[:,1].max()+1
+    xx,yy=np.meshgrid(np.arange(x_min,x_max,0.1),np.arange(y_min,y_max,0.1))
+    X_plot=np.c_[xx.ravel(),yy.ravel()]
+    X_plot=np.hstack((np.ones((X_plot.shape[0],1)),X_plot))
+    y_plot=np.dot(X_plot,theta).reshape(xx.shape)
+    
+    plt.figure()
+    plt.scatter(X[y==1][:,0],X[y==1][:,1],label="Admitted")
+    plt.scatter(X[y==0][:,0],X[y==0][:,1],label="Not Admitted")
+    plt.contour(xx,yy,y_plot,levels=[0])
+    plt.xlabel("Exam 1 score")
+    plt.ylabel("Exam 2 score")
+    plt.legend()
+    plt.show()
 
-from sklearn.linear_model import LogisticRegression
+plotDecisionBoundary(res.x,X,y)
 
-classifier=LogisticRegression(random_state=0)
+prob=sigmoid(np.dot(np.array([1,45,85]),res.x))
+print(prob)
 
-classifier.fit(x_train,y_train)
-
-y_pred=classifier.predict(x_test)
-
-y_pred
-
-from sklearn.metrics import confusion_matrix
-
-cm = confusion_matrix(y_test,y_pred)
-
-cm
-
-from sklearn import metrics
-
-accuracy =metrics.accuracy_score(y_test,y_pred)
-
-accuracy
-
-recall_sensitivity=metrics.recall_score(y_test,y_pred,pos_label=1)
-
-recall_specificity=metrics.recall_score(y_test,y_pred,pos_label=0)
-
-recall_sensitivity,recall_specificity
-
-from matplotlib.colors import ListedColormap
-
-x_Set,y_Set=x_train,y_train
-
-x1,x2=np.meshgrid(np.arange(start=x_Set[:,0].min()-1,stop=x_Set[:,0].max()+1,step=0.01),np.arange(start=x_Set[:,1].min()-1,stop=x_Set[:,1].max()+1,step=0.01))
-
-plt.contourf(x1,x2,classifier.predict(np.array([x1.ravel(),x2.ravel()]).T).reshape(x1.shape),alpha=0.75,cmap=ListedColormap(('red','green')))
-
-plt.xlim(x1.min(),x2.max())
-
-plt.ylim(x2.min(),x2.max())
-
-for i,j in enumerate(np.unique(y_Set)):
-
-  plt.scatter(x_Set[y_Set==j,0],x_Set[y_Set==j,1],c=ListedColormap(('blue','black'))(i),label=j)
-
-  plt.title('LogisticRegression(Trainingset)')
-
-  plt.xlabel('Age')
-
-  plt.ylabel('Estimated Salary')
-
-  plt.legend()
-
-  plt.show()
-
-
+def predict(theta,X):
+    X_train =np.hstack((np.ones((X.shape[0],1)),X))
+    prob=sigmoid(np.dot(X_train,theta))
+    return (prob>=0.5).astype(int)
+np.mean(predict(res.x,X)==y)
 ```
 
-## Output:
-![logistic regression using gradient descent](sam.png)
+# OUTPUT:
+![OP1](https://user-images.githubusercontent.com/93427182/200743097-39553309-bce4-4ce1-81f9-aea5300a7291.png)
+![OP2](https://user-images.githubusercontent.com/93427182/200743109-3c126c2e-e0e4-4b31-a569-34cd777c73b2.png)
+![OP3](https://user-images.githubusercontent.com/93427182/200743121-4d23182b-c613-4e6b-8bad-15336196903b.png)
+![OP4](https://user-images.githubusercontent.com/93427182/200743133-700c0917-9414-4800-bd01-8114cb81a092.png)
+![OP5](https://user-images.githubusercontent.com/93427182/200743145-466f73ca-fd15-463b-8e37-9b73d7d4b0ea.png)
+![OP6](https://user-images.githubusercontent.com/93427182/200743181-d96a2300-dedd-48e3-89c8-f13d1d80a55e.png)
 
 
-## Result:
+# RESULT:
 Thus the program to implement the the Logistic Regression Using Gradient Descent is written and verified using python programming.
 
